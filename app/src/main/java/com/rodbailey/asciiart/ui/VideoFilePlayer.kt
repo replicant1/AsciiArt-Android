@@ -1,12 +1,7 @@
 package com.rodbailey.asciiart.ui
 
-import android.content.Intent
 import android.net.Uri
-import android.provider.DocumentsContract
-import android.util.Log
 import android.view.TextureView
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,21 +44,37 @@ import com.rodbailey.asciiart.processing.AsciiDisplayMode
 import com.rodbailey.asciiart.processing.ExoPlayerFrameListener
 import com.rodbailey.asciiart.processing.FrameProcessingResult
 
-private const val TAG = "VideoFilePlayer"
 
+/**
+ * Renders the Video File tab.
+ *
+ * URI selection and persistence are handled by the caller ([AsciiPreviewRoot]) via the
+ * [onLoadVideo] callback and [loadedVideoUri] state. This composable owns only the
+ * ExoPlayer instance and the frame-capture pipeline, both of which are lifecycle-scoped
+ * to this composition via [DisposableEffect].
+ *
+ * **Performance note:** [videoFrame] and [isPlaying] remain as local `remember` state.
+ * They update at up to ~30 fps and would cause [AsciiPreviewScreen] to re-execute on
+ * every arrival if routed through the ViewModel's [StateFlow].
+ *
+ * @param loadedVideoUri Content URI string of the video to play, or null if none loaded.
+ * @param onLoadVideo Called when the user taps the "Load Video" button; the file picker
+ *   launcher lives in [AsciiPreviewRoot] and is passed down as this lambda.
+ */
 @Composable
 fun ExoPlayerVideoFileTab(
     scaleFactor: Int,
     contrastFactor: Float,
     colorEnabled: Boolean,
     displayMode: AsciiDisplayMode,
+    loadedVideoUri: String?,
+    onLoadVideo: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     var exoPlayer by remember { mutableStateOf<ExoPlayer?>(null) }
     var frameListener by remember { mutableStateOf<ExoPlayerFrameListener?>(null) }
     var captureTextureView by remember { mutableStateOf<TextureView?>(null) }
-    var loadedVideoUri by remember { mutableStateOf<String?>(null) }
     var isPlaying by remember { mutableStateOf(false) }
     var videoFrame by remember { mutableStateOf<FrameProcessingResult?>(null) }
 
@@ -74,32 +85,6 @@ fun ExoPlayerVideoFileTab(
     val currentCaptureTextureView = rememberUpdatedState(captureTextureView)
     val currentFrameSetter = rememberUpdatedState { frame: FrameProcessingResult ->
         videoFrame = frame
-    }
-
-    // File picker — opens in the Documents directory
-    val videoPickerLauncher = rememberLauncherForActivityResult(
-        contract = object : ActivityResultContracts.OpenDocument() {
-            override fun createIntent(context: android.content.Context, input: Array<String>): Intent {
-                return super.createIntent(context, input).apply {
-                    val docsUri = DocumentsContract.buildDocumentUri(
-                        "com.android.externalstorage.documents",
-                        "primary:Download"
-                    )
-                    putExtra(DocumentsContract.EXTRA_INITIAL_URI, docsUri)
-                }
-            }
-        }
-    ) { uri ->
-        if (uri != null) {
-            try {
-                context.contentResolver.takePersistableUriPermission(
-                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
-                )
-            } catch (e: Exception) {
-                Log.w(TAG, "Could not persist URI permission", e)
-            }
-            loadedVideoUri = uri.toString()
-        }
     }
 
     // Create and tear down ExoPlayer + frame listener
@@ -149,8 +134,7 @@ fun ExoPlayerVideoFileTab(
 
     // Point ExoPlayer at the capture TextureView. Both display modes render from captured
     // frames, so the target never changes with displayMode — but it does have to wait for
-    // the TextureView, which AndroidView creates after the first composition. Keying on
-    // captureTextureView makes that ordering irrelevant.
+    // the TextureView, which AndroidView creates after the first composition.
     LaunchedEffect(exoPlayer, captureTextureView) {
         val player = exoPlayer ?: return@LaunchedEffect
         val textureView = captureTextureView ?: return@LaunchedEffect
@@ -160,15 +144,13 @@ fun ExoPlayerVideoFileTab(
     // Each processed frame is built for one display mode and one colour setting, so
     // changing either needs a frame of its own. While playing, the next capture is a frame
     // or two away and this changes nothing; while paused there is no next capture, and
-    // without this the display would stay as it was until playback resumed. The Contrast
-    // and Scale sliders are deliberately not keys here: they fire continuously while being
-    // dragged, and each capture is a GPU-to-CPU readback on the main thread.
+    // without this the display would stay as it was until playback resumed.
     LaunchedEffect(displayMode, colorEnabled, frameListener) {
         frameListener?.refreshCurrentFrame()
     }
 
     Column(modifier = modifier.fillMaxSize()) {
-        // Persistent control bar — visible in both IMAGE and ASCII modes
+        // Persistent control bar
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -177,8 +159,7 @@ fun ExoPlayerVideoFileTab(
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Button(onClick = { videoPickerLauncher.launch(arrayOf("video/*")) }) {
-                // The icon is decorative — the adjacent label already names the action.
+            Button(onClick = onLoadVideo) {
                 Icon(Icons.Default.FolderOpen, contentDescription = null)
                 Spacer(Modifier.width(8.dp))
                 Text(
@@ -221,9 +202,9 @@ fun ExoPlayerVideoFileTab(
                 .fillMaxWidth()
                 .weight(1f)
         ) {
-            // Hidden capture surface — ExoPlayer renders the decoded video here in both
-            // display modes and getBitmap() reads it back. alpha=0 keeps it invisible;
-            // the processed output is drawn over the top.
+            // Hidden capture surface — ExoPlayer renders the decoded video here and
+            // getBitmap() reads it back. alpha=0 keeps it invisible; the processed output
+            // is drawn over the top.
             AndroidView(
                 factory = { ctx ->
                     TextureView(ctx).apply { alpha = 0f }.also { captureTextureView = it }
@@ -245,9 +226,6 @@ fun ExoPlayerVideoFileTab(
                 }
             } else {
                 val frame = videoFrame
-                // A frame carries only what the mode it was captured under draws, so
-                // displayBitmap is null until a frame captured in Image mode arrives. The
-                // LaunchedEffect above asks for one the moment the mode changes.
                 val imageBitmap =
                     frame?.displayBitmap?.takeIf { displayMode == AsciiDisplayMode.IMAGE }
                 if (imageBitmap != null) {
@@ -280,5 +258,3 @@ fun ExoPlayerVideoFileTab(
         }
     }
 }
-
-
