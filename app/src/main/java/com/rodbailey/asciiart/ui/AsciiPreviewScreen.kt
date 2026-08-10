@@ -60,7 +60,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.lifecycle.viewmodel.compose.viewModel
+import org.koin.androidx.compose.koinViewModel
 import com.rodbailey.asciiart.R
 import com.rodbailey.asciiart.camera.CameraFrameAnalyzer
 import com.rodbailey.asciiart.processing.AsciiDisplayMode
@@ -109,7 +109,7 @@ private const val TEXT_SIZE_CELL_FRACTION = 0.92f
  */
 @Composable
 fun AsciiPreviewRoot(
-    viewModel: AsciiPreviewViewModel = viewModel()
+    viewModel: AsciiPreviewViewModel = koinViewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current

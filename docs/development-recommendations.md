@@ -58,7 +58,7 @@ The `proguard-rules.pro` is likely still the default. If the app is ever release
 |---|------|--------|
 | 1 | ViewModel unit tests | ⬜ Not started |
 | 2 | String externalisation | ⬜ Not started |
-| 3 | Dependency injection (Koin) | ⬜ Not started |
+| 3 | Dependency injection (Koin) | ✅ Done |
 | 4 | Error handling layer | ⬜ Not started |
 | 5 | Compose UI tests | ⬜ Not started |
 | 6 | Navigation layer | ⬜ Not started |
