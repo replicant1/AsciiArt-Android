@@ -22,6 +22,7 @@ class CameraFrameAnalyzer(
     // FPS counter — counts frames processed in the current second window.
     private var fpsWindowStart = System.currentTimeMillis()
     private var fpsFrameCount = 0
+    private var fpsProcessingTotalMs = 0L
 
     /**
      * Processes one camera frame into an oriented de-res grid and posts it to the UI.
@@ -38,6 +39,7 @@ class CameraFrameAnalyzer(
     override fun analyze(image: ImageProxy) {
         val inputWidth = image.width
         val inputHeight = image.height
+        val frameStart = System.currentTimeMillis()
         val frameResult = ImageProcessor.processLiveCameraFrame(
             image = image,
             scaleFactor = scaleFactorProvider(),
@@ -46,17 +48,21 @@ class CameraFrameAnalyzer(
             displayMode = displayModeProvider(),
             rotationDegrees = image.imageInfo.rotationDegrees
         )
+        val frameMs = System.currentTimeMillis() - frameStart
         image.close()
         mainThreadHandler.post { onFrameProcessed(frameResult) }
 
-        // Log FPS once per second.
+        // Log FPS and avg processing time once per second.
         fpsFrameCount++
+        fpsProcessingTotalMs += frameMs
         val now = System.currentTimeMillis()
         val elapsed = now - fpsWindowStart
         if (elapsed >= 1_000L) {
             val fps = fpsFrameCount * 1_000f / elapsed
-            Log.d(TAG, "FPS: %.1f  |  input: ${inputWidth}x${inputHeight}".format(fps))
+            val avgMs = fpsProcessingTotalMs.toFloat() / fpsFrameCount
+            Log.d(TAG, "FPS: %.1f | avg frame: %.1f ms | input: ${inputWidth}x${inputHeight}".format(fps, avgMs))
             fpsFrameCount = 0
+            fpsProcessingTotalMs = 0L
             fpsWindowStart = now
         }
     }
