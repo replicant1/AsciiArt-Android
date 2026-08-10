@@ -2,6 +2,7 @@ package com.rodbailey.asciiart.camera
 
 import android.os.Handler
 import android.os.Looper
+import android.util.Log
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
 import com.rodbailey.asciiart.processing.AsciiDisplayMode
@@ -18,6 +19,10 @@ class CameraFrameAnalyzer(
 
     private val mainThreadHandler = Handler(Looper.getMainLooper())
 
+    // FPS counter — counts frames processed in the current second window.
+    private var fpsWindowStart = System.currentTimeMillis()
+    private var fpsFrameCount = 0
+
     /**
      * Processes one camera frame into an oriented de-res grid and posts it to the UI.
      *
@@ -31,6 +36,8 @@ class CameraFrameAnalyzer(
      * them from crossing to the main thread is what lets that buffer stay reusable.
      */
     override fun analyze(image: ImageProxy) {
+        val inputWidth = image.width
+        val inputHeight = image.height
         val frameResult = ImageProcessor.processLiveCameraFrame(
             image = image,
             scaleFactor = scaleFactorProvider(),
@@ -41,5 +48,20 @@ class CameraFrameAnalyzer(
         )
         image.close()
         mainThreadHandler.post { onFrameProcessed(frameResult) }
+
+        // Log FPS once per second.
+        fpsFrameCount++
+        val now = System.currentTimeMillis()
+        val elapsed = now - fpsWindowStart
+        if (elapsed >= 1_000L) {
+            val fps = fpsFrameCount * 1_000f / elapsed
+            Log.d(TAG, "FPS: %.1f  |  input: ${inputWidth}x${inputHeight}".format(fps))
+            fpsFrameCount = 0
+            fpsWindowStart = now
+        }
+    }
+
+    companion object {
+        private const val TAG = "CameraFrameAnalyzer"
     }
 }
