@@ -94,6 +94,12 @@ object ImageProcessor {
     private val videoFileInput = PixelBuffer()
     private val videoFileGrayscale = PixelBuffer()
 
+    // Reusable StringBuilder for ASCII text — cleared each frame with setLength(0)
+    // so its internal char buffer grows to fit on the first frame and is never
+    // reallocated again. Follows the same pattern as PixelBuffer.
+    // Safe to hold here: both pipelines reach assembleResult one call at a time.
+    private val asciiBuilder = StringBuilder()
+
     // Contrast look-up table — maps input gray (0-255) to contrast-adjusted gray (0-255).
     // Rebuilt only when contrastFactor changes, so the inner loop pays one array lookup per
     // pixel instead of a float multiply, add, clamp and roundToInt on every frame.
@@ -308,7 +314,7 @@ object ImageProcessor {
         asciiText = if (imageMode) {
             ""
         } else {
-            AsciiArt.toAsciiText(grayscale.pixelsForPlatformApi, gridSize)
+            AsciiArt.toAsciiText(grayscale.pixelsForPlatformApi, gridSize, asciiBuilder)
         },
         asciiColors = if (imageMode || !colorEnabled) null else colour.freeze(),
         gridSize = gridSize

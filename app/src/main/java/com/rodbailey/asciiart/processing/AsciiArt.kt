@@ -59,29 +59,32 @@ object AsciiArt {
      *   longer than [GridSize.cellCount] — the callers pass reusable buffers that are only
      *   ever grown — in which case the tail is ignored.
      * @param size Grid dimensions in cells
+     * @param out Reusable [StringBuilder] — cleared and refilled each call so its internal
+     *   char buffer is never reallocated after the first frame.
      * @return A multi-line ASCII string, one glyph per cell
      */
-    fun toAsciiText(grayscalePixels: IntArray, size: GridSize): String {
+    fun toAsciiText(grayscalePixels: IntArray, size: GridSize, out: StringBuilder): String {
         val glyphs = glyphForIntensity
         if (glyphs.isEmpty()) {
             return ""
         }
 
         val (width, height) = size
-        val textBuilder = StringBuilder((width + 1) * height)
+        out.setLength(0)
+        out.ensureCapacity((width + 1) * height)
 
         for (y in 0 until height) {
             val rowOffset = y * width
             for (x in 0 until width) {
                 // The low byte is the grayscale intensity, which indexes the glyph table
                 // directly. See buildGlyphTable for the mapping and why it is precomputed.
-                textBuilder.append(glyphs[grayscalePixels[rowOffset + x] and 0xFF])
+                out.append(glyphs[grayscalePixels[rowOffset + x] and 0xFF])
             }
             if (y < height - 1) {
-                textBuilder.append('\n')
+                out.append('\n')
             }
         }
-        return textBuilder.toString()
+        return out.toString()
     }
 
     /**
