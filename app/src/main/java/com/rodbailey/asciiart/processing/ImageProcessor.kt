@@ -94,6 +94,23 @@ object ImageProcessor {
     private val videoFileInput = PixelBuffer()
     private val videoFileGrayscale = PixelBuffer()
 
+    // Contrast look-up table — maps input gray (0-255) to contrast-adjusted gray (0-255).
+    // Rebuilt only when contrastFactor changes, so the inner loop pays one array lookup per
+    // pixel instead of a float multiply, add, clamp and roundToInt on every frame.
+    // Safe to hold here: the analysis executor runs one call at a time.
+    private var cachedContrast = Float.NaN
+    private val contrastLut = IntArray(256)
+
+    private fun ensureContrastLut(contrast: Float) {
+        if (contrast == cachedContrast) return
+        cachedContrast = contrast
+        for (gray in 0..255) {
+            contrastLut[gray] = (((gray - 128f) * contrast) + 128f)
+                .coerceIn(0f, 255f)
+                .roundToInt()
+        }
+    }
+
     /**
      * Downsamples a Live Camera frame into a de-res grid, applying [rotationDegrees] as it
      * goes.
@@ -128,6 +145,7 @@ object ImageProcessor {
     ): FrameProcessingResult {
         val step = scaleFactor.coerceAtLeast(1)
         val contrast = contrastFactor.coerceIn(0.2f, 2.0f)
+        ensureContrastLut(contrast)
         val sourceWidth = image.width
         val sourceHeight = image.height
         val outputWidth = max(1, sourceWidth / step)
@@ -167,8 +185,7 @@ object ImageProcessor {
                 val sourceX = min(sourceWidth - 1, x * step)
                 val lumaIndex = rowOffset + (sourceX * pixelStride)
                 val gray = lumaBuffer.get(lumaIndex).toInt() and 0xFF
-                val contrastedGray = (((gray - 128f) * contrast) + 128f).coerceIn(0f, 255f)
-                val contrastedGrayInt = contrastedGray.roundToInt().coerceIn(0, 255)
+                val contrastedGrayInt = contrastLut[gray]
                 val outIndex = rotatedRowBase + (rotation.stepX * x)
                 if (grayscaleNeeded) {
                     liveCameraGrayscale[outIndex] = (0xFF shl 24) or
@@ -220,6 +237,7 @@ object ImageProcessor {
         displayMode: AsciiDisplayMode
     ): FrameProcessingResult {
         val contrast = contrastFactor.coerceIn(0.2f, 2.0f)
+        ensureContrastLut(contrast)
         val width = bitmap.width
         val height = bitmap.height
         val imageMode = displayMode == AsciiDisplayMode.IMAGE
@@ -241,10 +259,9 @@ object ImageProcessor {
                 val g = (argb shr 8) and 0xFF
                 val b = argb and 0xFF
 
-                // Convert RGB to grayscale (luminance)
+                // Convert RGB to grayscale (luminance) then apply contrast via LUT
                 val gray = (0.299f * r + 0.587f * g + 0.114f * b).toInt()
-                val contrastedGray = (((gray - 128f) * contrast) + 128f).coerceIn(0f, 255f)
-                val contrastAdjustedGray = contrastedGray.roundToInt().coerceIn(0, 255)
+                val contrastAdjustedGray = contrastLut[gray.coerceIn(0, 255)]
 
                 videoFileGrayscale[i] = (0xFF shl 24) or
                     (contrastAdjustedGray shl 16) or
