@@ -1,16 +1,22 @@
 package com.rodbailey.asciiart.ui
 
 import android.Manifest
+import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
+import android.os.Build
 import android.graphics.Bitmap
 import android.graphics.Paint as AndroidPaint
+import android.net.Uri
+import android.provider.DocumentsContract
 import android.util.Log
-import androidx.compose.foundation.Canvas
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.lifecycle.ProcessCameraProvider
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -31,9 +37,8 @@ import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableFloatStateOf
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
@@ -49,15 +54,20 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
-import com.rodbailey.asciiart.R
-import androidx.compose.foundation.BorderStroke
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.repeatOnLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.rodbailey.asciiart.R
 import com.rodbailey.asciiart.camera.CameraFrameAnalyzer
 import com.rodbailey.asciiart.processing.AsciiDisplayMode
 import com.rodbailey.asciiart.processing.FrameProcessingResult
 import com.rodbailey.asciiart.processing.GridSize
 import com.rodbailey.asciiart.processing.PixelGrid
+import kotlinx.coroutines.flow.Flow
 import java.util.concurrent.ExecutionException
 import java.util.concurrent.Executors
 import kotlin.math.roundToInt
@@ -80,42 +90,135 @@ private const val TEXT_METRICS_CACHE_SLOTS = 4
 // their cell bounds.
 private const val TEXT_SIZE_CELL_FRACTION = 0.92f
 
+// ---------------------------------------------------------------------------
+// Root composable — owns the ViewModel, launchers, and lifecycle observer
+// ---------------------------------------------------------------------------
+
+/**
+ * Entry point called from [com.rodbailey.asciiart.MainActivity].
+ *
+ * Responsibilities:
+ * - Creates / retrieves [AsciiPreviewViewModel].
+ * - Syncs [AsciiPreviewState.hasCameraPermission] from the Android system on every
+ *   ON_RESUME (covers the "user went to Settings and granted permission" path).
+ * - Owns the camera-permission launcher and video-file picker launcher, because both
+ *   require composable-scoped APIs ([rememberLauncherForActivityResult]).
+ * - Observes [AsciiPreviewEvent]s (none yet, but the channel is ready for future additions).
+ * - Passes [AsciiPreviewState] and [AsciiPreviewViewModel.onAction] to the stateless
+ *   [AsciiPreviewScreen].
+ */
 @Composable
-fun AsciiPreviewScreen() {
-    // Shared slider controls for both camera and video pipelines
-    var scaleFactor by remember { mutableIntStateOf(8) }
-    var contrastFactor by remember { mutableFloatStateOf(1.0f) }
-    var colorEnabled by remember { mutableStateOf(false) }
-    var displayMode by remember { mutableStateOf(AsciiDisplayMode.IMAGE) }
-    
-    // Tab selection state
-    var selectedTab by remember { mutableIntStateOf(0) }
-    
+fun AsciiPreviewRoot(
+    viewModel: AsciiPreviewViewModel = viewModel()
+) {
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
-    var hasCameraPermission by remember {
-        mutableStateOf(
-            ContextCompat.checkSelfPermission(
-                context,
-                Manifest.permission.CAMERA
-            ) == PackageManager.PERMISSION_GRANTED
-        )
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    // Sync camera permission on every ON_RESUME so the UI reflects changes made in Settings.
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                val granted = ContextCompat.checkSelfPermission(
+                    context, Manifest.permission.CAMERA
+                ) == PackageManager.PERMISSION_GRANTED
+                viewModel.onAction(AsciiPreviewAction.OnCameraPermissionResult(granted))
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
+
+    // Camera permission launcher — result flows back through the ViewModel.
     val cameraPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { granted ->
-        hasCameraPermission = granted
+        viewModel.onAction(AsciiPreviewAction.OnCameraPermissionResult(granted))
     }
 
+    // Video file picker — opens in the Download directory and persists the URI grant.
+    val videoPickerLauncher = rememberLauncherForActivityResult(
+        contract = object : ActivityResultContracts.OpenDocument() {
+            override fun createIntent(context: Context, input: Array<String>): Intent =
+                super.createIntent(context, input).apply {
+                    // EXTRA_INITIAL_URI requires API 26
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                        putExtra(
+                            DocumentsContract.EXTRA_INITIAL_URI,
+                            DocumentsContract.buildDocumentUri(
+                                "com.android.externalstorage.documents",
+                                "primary:Download"
+                            )
+                        )
+                    }
+                }
+        }
+    ) { uri: Uri? ->
+        if (uri != null) {
+            try {
+                context.contentResolver.takePersistableUriPermission(
+                    uri, Intent.FLAG_GRANT_READ_URI_PERMISSION
+                )
+            } catch (e: Exception) {
+                Log.w(TAG, "Could not persist URI permission", e)
+            }
+            viewModel.onAction(AsciiPreviewAction.OnVideoUriSelected(uri.toString()))
+        }
+    }
+
+    // Collect one-time events. No events are defined yet; the channel is here so the
+    // pattern is in place for future additions (e.g. Snackbar on a processing error).
+    ObserveAsEvents(viewModel.events) { /* exhaustive when goes here when events are added */ }
+
+    AsciiPreviewScreen(
+        state = state,
+        onAction = viewModel::onAction,
+        onRequestCameraPermission = {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        },
+        onLoadVideo = {
+            videoPickerLauncher.launch(arrayOf("video/*"))
+        }
+    )
+}
+
+// ---------------------------------------------------------------------------
+// Screen composable — stateless; receives state + callbacks only
+// ---------------------------------------------------------------------------
+
+/**
+ * Renders the full ASCII preview UI.
+ *
+ * This composable holds no state and no ViewModel reference, making it independently
+ * previewable and testable.
+ *
+ * **Performance note:** frame data is intentionally absent from [state]. The camera and
+ * video pipelines deliver results at ~30 fps. Routing those updates through the ViewModel's
+ * [StateFlow] would cause this entire composable body to re-execute on every frame arrival.
+ * Frame state lives as local `remember` inside [CameraTabContent] and [ExoPlayerVideoFileTab]
+ * instead, scoping recomposition to only the inner frame-display composable.
+ *
+ * @param onRequestCameraPermission Called when the user taps the "Grant Permission" button.
+ *   The launcher lives in [AsciiPreviewRoot] because it needs composable scope.
+ * @param onLoadVideo Called when the user taps "Load Video". The file-picker launcher
+ *   lives in [AsciiPreviewRoot] for the same reason.
+ */
+@Composable
+fun AsciiPreviewScreen(
+    state: AsciiPreviewState,
+    onAction: (AsciiPreviewAction) -> Unit,
+    onRequestCameraPermission: () -> Unit,
+    onLoadVideo: () -> Unit
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // Header
         Text(stringResource(R.string.app_title), style = MaterialTheme.typography.titleLarge)
-        
-        // Shared Controls Section (sliders, display mode, color toggle)
+
+        // Shared Controls Section
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -124,58 +227,57 @@ fun AsciiPreviewScreen() {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                stringResource(R.string.ascii_preview_scale_factor_label, scaleFactor),
+                stringResource(R.string.ascii_preview_scale_factor_label, state.scaleFactor),
                 style = MaterialTheme.typography.labelLarge
             )
             Slider(
-                value = scaleFactor.toFloat(),
-                onValueChange = { scaleFactor = it.roundToInt() },
+                value = state.scaleFactor.toFloat(),
+                onValueChange = { onAction(AsciiPreviewAction.OnScaleFactorChange(it.roundToInt())) },
                 valueRange = 2f..48f
             )
             Text(
-                stringResource(R.string.ascii_preview_contrast_label, (contrastFactor * 100f).roundToInt()),
+                stringResource(R.string.ascii_preview_contrast_label, (state.contrastFactor * 100f).roundToInt()),
                 style = MaterialTheme.typography.labelLarge
             )
             Slider(
-                value = contrastFactor,
-                onValueChange = { contrastFactor = it },
+                value = state.contrastFactor,
+                onValueChange = { onAction(AsciiPreviewAction.OnContrastFactorChange(it)) },
                 valueRange = 0.2f..2.0f
             )
             DisplayModeChipBar(
-                displayMode = displayMode,
-                onDisplayModeChange = { displayMode = it },
-                colorEnabled = colorEnabled,
-                onColorEnabledChange = { colorEnabled = it },
+                displayMode = state.displayMode,
+                onDisplayModeChange = { onAction(AsciiPreviewAction.OnDisplayModeChange(it)) },
+                colorEnabled = state.colorEnabled,
+                onColorEnabledChange = { onAction(AsciiPreviewAction.OnColorEnabledChange(it)) },
                 modifier = Modifier.fillMaxWidth()
             )
         }
-        
+
         // Tab Selection
-        TabRow(selectedTabIndex = selectedTab) {
+        TabRow(selectedTabIndex = state.selectedTab) {
             Tab(
-                selected = selectedTab == 0,
-                onClick = { selectedTab = 0 },
+                selected = state.selectedTab == 0,
+                onClick = { onAction(AsciiPreviewAction.OnTabSelected(0)) },
                 text = { Text(stringResource(R.string.ascii_preview_tab_live_camera)) }
             )
             Tab(
-                selected = selectedTab == 1,
-                onClick = { selectedTab = 1 },
+                selected = state.selectedTab == 1,
+                onClick = { onAction(AsciiPreviewAction.OnTabSelected(1)) },
                 text = { Text(stringResource(R.string.ascii_preview_tab_video_file)) }
             )
         }
-        
-        // Content Area (switches based on selected tab)
+
+        // Content Area
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .weight(1f),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            when (selectedTab) {
+            when (state.selectedTab) {
                 0 -> {
-                    // Camera tab
-                    if (!hasCameraPermission) {
-                        Button(onClick = { cameraPermissionLauncher.launch(Manifest.permission.CAMERA) }) {
+                    if (!state.hasCameraPermission) {
+                        Button(onClick = onRequestCameraPermission) {
                             Text(stringResource(R.string.camera_permission_request_button))
                         }
                         Box(
@@ -192,22 +294,23 @@ fun AsciiPreviewScreen() {
                         }
                     } else {
                         CameraTabContent(
-                            scaleFactor = scaleFactor,
-                            contrastFactor = contrastFactor,
-                            colorEnabled = colorEnabled,
-                            displayMode = displayMode,
+                            scaleFactor = state.scaleFactor,
+                            contrastFactor = state.contrastFactor,
+                            colorEnabled = state.colorEnabled,
+                            displayMode = state.displayMode,
                             modifier = Modifier.weight(1f)
                         )
                     }
                 }
-                
+
                 1 -> {
-                    // Video file tab
                     ExoPlayerVideoFileTab(
-                        scaleFactor = scaleFactor,
-                        contrastFactor = contrastFactor,
-                        colorEnabled = colorEnabled,
-                        displayMode = displayMode,
+                        scaleFactor = state.scaleFactor,
+                        contrastFactor = state.contrastFactor,
+                        colorEnabled = state.colorEnabled,
+                        displayMode = state.displayMode,
+                        loadedVideoUri = state.loadedVideoUri,
+                        onLoadVideo = onLoadVideo,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -215,6 +318,10 @@ fun AsciiPreviewScreen() {
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// Private sub-composables
+// ---------------------------------------------------------------------------
 
 @Composable
 private fun CameraTabContent(
@@ -224,6 +331,9 @@ private fun CameraTabContent(
     displayMode: AsciiDisplayMode,
     modifier: Modifier = Modifier
 ) {
+    // liveFrame stays as local remember state: updating it at ~30 fps here scopes
+    // recomposition to only this subtree, rather than causing AsciiPreviewScreen to
+    // re-execute on every camera frame.
     var liveFrame by remember { mutableStateOf<FrameProcessingResult?>(null) }
 
     Column(modifier = modifier.fillMaxSize()) {
@@ -261,7 +371,10 @@ private fun CameraTabContent(
                 modifier = previewModifier.background(MaterialTheme.colorScheme.surfaceVariant),
                 contentAlignment = Alignment.Center
             ) {
-                Text(stringResource(R.string.ascii_preview_waiting_for_frames), style = MaterialTheme.typography.labelMedium)
+                Text(
+                    stringResource(R.string.ascii_preview_waiting_for_frames),
+                    style = MaterialTheme.typography.labelMedium
+                )
             }
         }
     }
@@ -414,8 +527,6 @@ fun ImagePreview(
     bitmap: Bitmap,
     modifier: Modifier = Modifier
 ) {
-    // ContentScale.Fit performs the same aspect-fit-and-centre the manual loop did, and
-    // FilterQuality.None is what keeps the cells blocky rather than interpolated.
     Image(
         bitmap = bitmap.asImageBitmap(),
         contentDescription = stringResource(R.string.ascii_preview_image_content_description),
@@ -446,24 +557,11 @@ fun AsciiGridPreview(
     colorEnabled: Boolean,
     modifier: Modifier,
 ) {
-    // A colour grid of the wrong shape would tint every glyph from the wrong cell — a
-    // plausible-looking image rather than an obvious failure, and silent. One comparison per
-    // recomposition buys an immediate crash instead.
     require(asciiColors == null || asciiColors.size == gridSize) {
         "colour grid ${asciiColors?.size} does not match the glyph grid $gridSize"
     }
 
     val (gridWidth, gridHeight) = gridSize
-    // AsciiArt.toAsciiText emits exactly gridWidth characters per row, separated by
-    // '\n', so row y starts at y * (gridWidth + 1). Row bounds are pure arithmetic —
-    // no newline scan and no offsets array, which previously cost an O(text) scan plus an
-    // IntArray allocation on every frame.
-    //
-    // Both draw loops below then use drawText(asciiText, start, end, ...), which indexes
-    // straight into the original string's char[]. The point of that is to avoid
-    // asciiText.split('\n'), which allocated a List plus one String and one backing char[]
-    // per row — on a Pixel 3 at scaleFactor 8 that is 240 rows of ~135 chars, roughly
-    // 85 KB per frame, or ~2.5 MB/sec of GC pressure at 30fps.
     val rowStride = gridWidth + 1
     val defaultAsciiColor = Color.White.toArgb()
     val gridWidthSampleChar = stringResource(R.string.grid_width_sample_char)
@@ -473,18 +571,10 @@ fun AsciiGridPreview(
             typeface = android.graphics.Typeface.MONOSPACE
         }
     }
-
-    // Pre-allocated FontMetrics — avoids the new FontMetrics() allocation on every frame
-    // that textPaint.fontMetrics produces. getFontMetrics(existing) fills it in-place.
     val fontMetricsCache = remember { AndroidPaint.FontMetrics() }
-
-    // Slot layout and the -1f "not yet measured" sentinel are documented at the CACHE_*
-    // constants above.
     val textMetricsCache = remember { FloatArray(TEXT_METRICS_CACHE_SLOTS) { -1f } }
 
-    Canvas(
-        modifier = modifier.background(Color.Black)
-    ) {
+    Canvas(modifier = modifier.background(Color.Black)) {
         val sourceWidth = gridWidth.toFloat()
         val sourceHeight = gridHeight.toFloat()
         val sourceAspect = sourceWidth / sourceHeight
@@ -511,10 +601,6 @@ fun AsciiGridPreview(
             val cellWidth = drawWidth / gridWidth
             val cellHeight = drawHeight / gridHeight
 
-            // Recompute text metrics only when cell dimensions change.
-            // In steady state (no scale/canvas change) this block is skipped entirely,
-            // saving 2x measureText() calls, 1x FontMetrics allocation, and 1-2x
-            // textPaint.textSize mutations per frame.
             if (cellWidth != textMetricsCache[CACHE_CELL_WIDTH] || cellHeight != textMetricsCache[CACHE_CELL_HEIGHT]) {
                 val baseTextSize = cellHeight * TEXT_SIZE_CELL_FRACTION
                 textPaint.textSize = baseTextSize
@@ -530,18 +616,10 @@ fun AsciiGridPreview(
             }
             val baselineOffset = textMetricsCache[CACHE_BASELINE_OFFSET]
             val charWidth = textMetricsCache[CACHE_CHAR_WIDTH]
-
-            // Pre-compute the x origin so each character is centred in its cell.
             val rowStartX = drawOffsetX + (cellWidth - charWidth) / 2f
-
             val nativeCanvas = drawContext.canvas.nativeCanvas
 
             if (!colorEnabled) {
-                // Non-colour: draw each row in a single drawText() call (~270 calls/frame
-                // instead of ~36,450). Paint.letterSpacing pads the advance of each glyph
-                // so characters stay centred in their cells.
-                // drawText(String, start, end, ...) indexes directly into asciiText —
-                // no row String objects needed.
                 textPaint.color = defaultAsciiColor
                 textPaint.letterSpacing = (cellWidth - charWidth) / textPaint.textSize
                 for (y in 0 until gridHeight) {
@@ -553,8 +631,6 @@ fun AsciiGridPreview(
                 }
                 textPaint.letterSpacing = 0f
             } else {
-                // Colour mode: must draw per-character for individual colours.
-                // Reuse a CharArray(1) to avoid 36K String allocations per frame.
                 val singleChar = CharArray(1)
                 for (y in 0 until gridHeight) {
                     val rowStart = y * rowStride
@@ -572,3 +648,25 @@ fun AsciiGridPreview(
         }
     }
 }
+
+// ---------------------------------------------------------------------------
+// Utility
+// ---------------------------------------------------------------------------
+
+/**
+ * Collects [flow] while the lifecycle is at least STARTED, forwarding each emission to
+ * [onEvent]. Cancels and restarts automatically with lifecycle transitions.
+ *
+ * Used by [AsciiPreviewRoot] to observe [AsciiPreviewEvent]s. Extracted as a composable so
+ * the lifecycle-aware collection pattern is reusable and its intent is self-documenting.
+ */
+@Composable
+private fun <T> ObserveAsEvents(flow: Flow<T>, onEvent: (T) -> Unit) {
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(flow, lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            flow.collect { onEvent(it) }
+        }
+    }
+}
+
