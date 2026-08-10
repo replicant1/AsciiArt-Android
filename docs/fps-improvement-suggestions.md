@@ -46,7 +46,7 @@ Every frame posts a `Runnable` to the main thread via `Handler`. A `MutableState
 ---
 
 ### 4. Eliminate per-frame `String` allocation in `toAsciiText()`
-**Status:** ⬜ Not started
+**Status:** ✅ Done — `ImageProcessor` now holds a reusable `StringBuilder asciiBuilder`, passed into `toAsciiText()` each frame and cleared with `setLength(0)`. PR #41.
 
 `AsciiArt.toAsciiText()` builds a new `String` every frame in ASCII mode. A reusable `StringBuilder` kept inside `ImageProcessor` — following the same `PixelBuffer` pattern already used for pixel arrays — would remove one heap allocation per frame in ASCII mode.
 
@@ -88,4 +88,6 @@ The YUV→ARGB conversion runs for every output cell when colour is on. The coef
 | # | Optimisation | Result |
 |---|---|---|
 | — | Explicit 640×480 `ResolutionSelector` on `ImageAnalysis` | Steady-state FPS: ~25 → ~30 on Pixel 3 |
+| — | Contrast LUT replacing per-pixel float arithmetic | Reduces per-frame CPU arithmetic; ~1.1 ms avg frame time at scale=8 |
+| — | Reusable `StringBuilder` in `toAsciiText()` | Eliminates ~120 KB/sec heap churn in ASCII mode at 25 fps |
 
