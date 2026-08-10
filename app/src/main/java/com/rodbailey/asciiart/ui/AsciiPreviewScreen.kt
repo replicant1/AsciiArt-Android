@@ -12,8 +12,11 @@ import android.provider.DocumentsContract
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import android.util.Size
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
+import androidx.camera.core.resolutionselector.ResolutionSelector
+import androidx.camera.core.resolutionselector.ResolutionStrategy
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -451,6 +454,16 @@ private fun CameraAnalysisPipeline(
         val cameraProviderFuture = ProcessCameraProvider.getInstance(context)
         val analysisExecutor = Executors.newSingleThreadExecutor()
         val analysisUseCase = ImageAnalysis.Builder()
+            .setResolutionSelector(
+                ResolutionSelector.Builder()
+                    .setResolutionStrategy(
+                        ResolutionStrategy(
+                            Size(640, 480),
+                            ResolutionStrategy.FALLBACK_RULE_CLOSEST_LOWER_THEN_HIGHER
+                        )
+                    )
+                    .build()
+            )
             .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
             .build()
 
