@@ -24,6 +24,31 @@ Both tabs support a **Colour** toggle:
 [screenshot-live]: docs/screenshot_live_camera.png
 [screenshot-video]: docs/screenshot_video_file.png
 
+## Documentation
+
+### Pipeline Visualizations
+| Diagram | Description |
+|---|---|
+| [Grayscale Pipeline Flowchart](docs/pipeline-grayscale-flow.png) · ([.mmd source](docs/pipeline-grayscale-flow.mmd)) | End-to-end flowchart of the live camera grayscale pipeline, from `YUV_420_888` capture through to Compose display. |
+| [Pixel Journey — data transformation](docs/pipeline-grayscale-pixel-journey.svg) | Step-by-step illustrated walkthrough showing how a single frame's pixel values change at each stage: Y-plane extraction, downsampling, contrast LUT, ARGB packing, and the IMAGE / ASCII output split. |
+
+### Architecture Diagram Renders
+Standalone PNG renders of the diagrams embedded in the [Architecture Diagrams](#architecture-diagrams) section below.
+
+| Diagram | File |
+|---|---|
+| Grayscale Mode Sequence | [sequence-grayscale.png](docs/sequence-grayscale.png) · [.mmd](docs/sequence-grayscale.mmd) |
+| Colour Mode Sequence | [sequence-colour.png](docs/sequence-colour.png) · [.mmd](docs/sequence-colour.mmd) |
+| Video File Sequence | [sequence-video-file.png](docs/sequence-video-file.png) · [.mmd](docs/sequence-video-file.mmd) |
+| Static Class Diagram | [class-diagram.png](docs/class-diagram.png) · [.mmd](docs/class-diagram.mmd) |
+
+### Analysis & Notes
+| Document | Description |
+|---|---|
+| [Code Review — Aug 2026](docs/code-review-2026-08-04.md) | Full code review covering architecture, performance, correctness, and test coverage. |
+| [Development Recommendations](docs/development-recommendations.md) | Prioritised list of recommended improvements to the codebase. |
+| [FPS Improvement Suggestions](docs/fps-improvement-suggestions.md) | Targeted suggestions for improving frame throughput in both the live camera and video file pipelines. |
+
 ## Why this was created
 This project was created as an exploration of **GitHub Copilot’s capability** to iteratively design, implement, debug, and refine a non-trivial real-time graphics pipeline in an Android app.
 
