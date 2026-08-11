@@ -1,0 +1,274 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="940" height="2094" viewBox="0 0 940 2094">
+<defs>
+  <marker id="arr" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+    <polygon points="0 0,10 3.5,0 7" fill="#374151"/>
+  </marker>
+</defs>
+<rect width="940" height="2094" fill="#f1f5f9"/>
+<rect x="35" y="20" width="870" height="300" rx="14" fill="#fafafa" stroke="#7c3aed" stroke-width="3"/>
+<text x="470" y="52" text-anchor="middle" font-family="sans-serif" font-size="17" font-weight="bold" fill="#7c3aed">① Camera Frame  (YUV_420_888)</text>
+<text x="470" y="72" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#555">640 x 480 px  ·  ~30 fps  |  Each pixel = Y (brightness) + U, V (colour tint)</text>
+<rect x="334" y="82" width="68" height="68" fill="rgb(24,20,14)" stroke="white" stroke-width="1.5"/>
+<rect x="402" y="82" width="68" height="68" fill="rgb(224,190,137)" stroke="white" stroke-width="1.5"/>
+<rect x="470" y="82" width="68" height="68" fill="rgb(254,215,155)" stroke="white" stroke-width="1.5"/>
+<rect x="538" y="82" width="68" height="68" fill="rgb(35,30,22)" stroke="white" stroke-width="1.5"/>
+<rect x="334" y="150" width="68" height="68" fill="rgb(35,30,22)" stroke="white" stroke-width="1.5"/>
+<rect x="402" y="150" width="68" height="68" fill="rgb(255,240,173)" stroke="white" stroke-width="1.5"/>
+<rect x="470" y="150" width="68" height="68" fill="rgb(255,220,158)" stroke="white" stroke-width="1.5"/>
+<rect x="538" y="150" width="68" height="68" fill="rgb(30,25,18)" stroke="white" stroke-width="1.5"/>
+<rect x="334" y="218" width="68" height="68" fill="rgb(18,15,11)" stroke="white" stroke-width="1.5"/>
+<rect x="402" y="218" width="68" height="68" fill="rgb(65,55,40)" stroke="white" stroke-width="1.5"/>
+<rect x="470" y="218" width="68" height="68" fill="rgb(77,65,47)" stroke="white" stroke-width="1.5"/>
+<rect x="538" y="218" width="68" height="68" fill="rgb(24,20,14)" stroke="white" stroke-width="1.5"/>
+<text x="368" y="73" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#aaa" font-weight="normal">col 0</text>
+<text x="436" y="73" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#aaa" font-weight="normal">col 1</text>
+<text x="504" y="73" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#aaa" font-weight="normal">col 2</text>
+<text x="572" y="73" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#aaa" font-weight="normal">col 3</text>
+<text x="326" y="116" text-anchor="end" font-family="sans-serif" font-size="10" fill="#aaa" font-weight="normal">row 0</text>
+<text x="326" y="184" text-anchor="end" font-family="sans-serif" font-size="10" fill="#aaa" font-weight="normal">row 1</text>
+<text x="326" y="252" text-anchor="end" font-family="sans-serif" font-size="10" fill="#aaa" font-weight="normal">row 2</text>
+<text x="622" y="176" text-anchor="start" font-family="sans-serif" font-size="11" fill="#7c3aed" font-weight="bold">warm-tinted pixels</text>
+<text x="622" y="194" text-anchor="start" font-family="sans-serif" font-size="10" fill="#888" font-weight="normal">Y + U + V channels present</text>
+<line x1="470" y1="320" x2="470" y2="360" stroke="#374151" stroke-width="2.5" marker-end="url(#arr)"/>
+<text x="478" y="342" text-anchor="start" font-family="sans-serif" font-size="11" fill="#555" font-weight="normal">planes[0].buffer  ->  extract Y-plane only</text>
+<rect x="35" y="372" width="870" height="300" rx="14" fill="#fafafa" stroke="#2563eb" stroke-width="3"/>
+<text x="470" y="404" text-anchor="middle" font-family="sans-serif" font-size="17" font-weight="bold" fill="#2563eb">② Y-Plane — brightness only</text>
+<text x="470" y="424" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#555">U and V colour channels are discarded.  Each cell = one number 0-255  (0=black · 255=white)</text>
+<rect x="334" y="434" width="68" height="68" fill="rgb(20,20,20)" stroke="white" stroke-width="1.5"/>
+<text x="368" y="468" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">20</text>
+<rect x="402" y="434" width="68" height="68" fill="rgb(190,190,190)" stroke="white" stroke-width="1.5"/>
+<text x="436" y="468" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#111111">190</text>
+<rect x="470" y="434" width="68" height="68" fill="rgb(215,215,215)" stroke="white" stroke-width="1.5"/>
+<text x="504" y="468" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#111111">215</text>
+<rect x="538" y="434" width="68" height="68" fill="rgb(30,30,30)" stroke="white" stroke-width="1.5"/>
+<text x="572" y="468" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">30</text>
+<rect x="334" y="502" width="68" height="68" fill="rgb(30,30,30)" stroke="white" stroke-width="1.5"/>
+<text x="368" y="536" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">30</text>
+<rect x="402" y="502" width="68" height="68" fill="rgb(240,240,240)" stroke="white" stroke-width="1.5"/>
+<text x="436" y="536" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#111111">240</text>
+<rect x="470" y="502" width="68" height="68" fill="rgb(220,220,220)" stroke="white" stroke-width="1.5"/>
+<text x="504" y="536" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#111111">220</text>
+<rect x="538" y="502" width="68" height="68" fill="rgb(25,25,25)" stroke="white" stroke-width="1.5"/>
+<text x="572" y="536" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">25</text>
+<rect x="334" y="570" width="68" height="68" fill="rgb(15,15,15)" stroke="white" stroke-width="1.5"/>
+<text x="368" y="604" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">15</text>
+<rect x="402" y="570" width="68" height="68" fill="rgb(55,55,55)" stroke="white" stroke-width="1.5"/>
+<text x="436" y="604" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">55</text>
+<rect x="470" y="570" width="68" height="68" fill="rgb(65,65,65)" stroke="white" stroke-width="1.5"/>
+<text x="504" y="604" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">65</text>
+<rect x="538" y="570" width="68" height="68" fill="rgb(20,20,20)" stroke="white" stroke-width="1.5"/>
+<text x="572" y="604" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">20</text>
+<text x="368" y="425" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#aaa" font-weight="normal">col 0</text>
+<text x="436" y="425" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#aaa" font-weight="normal">col 1</text>
+<text x="504" y="425" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#aaa" font-weight="normal">col 2</text>
+<text x="572" y="425" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#aaa" font-weight="normal">col 3</text>
+<text x="326" y="468" text-anchor="end" font-family="sans-serif" font-size="10" fill="#aaa" font-weight="normal">row 0</text>
+<text x="326" y="536" text-anchor="end" font-family="sans-serif" font-size="10" fill="#aaa" font-weight="normal">row 1</text>
+<text x="326" y="604" text-anchor="end" font-family="sans-serif" font-size="10" fill="#aaa" font-weight="normal">row 2</text>
+<text x="622" y="528" text-anchor="start" font-family="sans-serif" font-size="11" fill="#2563eb" font-weight="bold">one number per pixel</text>
+<text x="622" y="546" text-anchor="start" font-family="sans-serif" font-size="10" fill="#888" font-weight="normal">U, V discarded entirely</text>
+<line x1="470" y1="672" x2="470" y2="712" stroke="#374151" stroke-width="2.5" marker-end="url(#arr)"/>
+<text x="478" y="694" text-anchor="start" font-family="sans-serif" font-size="11" fill="#555" font-weight="normal">step = scaleFactor.coerceAtLeast(1)  ->  read every Nth pixel</text>
+<rect x="35" y="724" width="870" height="326" rx="14" fill="#fafafa" stroke="#0891b2" stroke-width="3"/>
+<text x="470" y="756" text-anchor="middle" font-family="sans-serif" font-size="17" font-weight="bold" fill="#0891b2">③ Downsample — skip every N pixels</text>
+<text x="470" y="776" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#555">step=8: 640->80 cols, 480->60 rows.  (step=2 shown here for clarity)</text>
+<g opacity="0.25">
+<rect x="234" y="786" width="68" height="68" fill="rgb(20,20,20)" stroke="white" stroke-width="1.5"/>
+<rect x="302" y="786" width="68" height="68" fill="rgb(190,190,190)" stroke="white" stroke-width="1.5"/>
+<rect x="370" y="786" width="68" height="68" fill="rgb(215,215,215)" stroke="white" stroke-width="1.5"/>
+<rect x="438" y="786" width="68" height="68" fill="rgb(30,30,30)" stroke="white" stroke-width="1.5"/>
+<rect x="234" y="854" width="68" height="68" fill="rgb(30,30,30)" stroke="white" stroke-width="1.5"/>
+<rect x="302" y="854" width="68" height="68" fill="rgb(240,240,240)" stroke="white" stroke-width="1.5"/>
+<rect x="370" y="854" width="68" height="68" fill="rgb(220,220,220)" stroke="white" stroke-width="1.5"/>
+<rect x="438" y="854" width="68" height="68" fill="rgb(25,25,25)" stroke="white" stroke-width="1.5"/>
+<rect x="234" y="922" width="68" height="68" fill="rgb(15,15,15)" stroke="white" stroke-width="1.5"/>
+<rect x="302" y="922" width="68" height="68" fill="rgb(55,55,55)" stroke="white" stroke-width="1.5"/>
+<rect x="370" y="922" width="68" height="68" fill="rgb(65,65,65)" stroke="white" stroke-width="1.5"/>
+<rect x="438" y="922" width="68" height="68" fill="rgb(20,20,20)" stroke="white" stroke-width="1.5"/>
+</g>
+<rect x="234" y="786" width="68" height="68" fill="rgba(8,145,178,0.18)" stroke="#0891b2" stroke-width="2.5" stroke-dasharray="5,3"/>
+<rect x="370" y="786" width="68" height="68" fill="rgba(8,145,178,0.18)" stroke="#0891b2" stroke-width="2.5" stroke-dasharray="5,3"/>
+<rect x="234" y="922" width="68" height="68" fill="rgba(8,145,178,0.18)" stroke="#0891b2" stroke-width="2.5" stroke-dasharray="5,3"/>
+<rect x="370" y="922" width="68" height="68" fill="rgba(8,145,178,0.18)" stroke="#0891b2" stroke-width="2.5" stroke-dasharray="5,3"/>
+<text x="370" y="1012" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#aaa" font-weight="normal">full 4x3 frame  (faded)</text>
+<text x="370" y="1029" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#0891b2" font-weight="normal">dashed = cells that ARE sampled</text>
+<line x1="514" y1="888" x2="586" y2="888" stroke="#374151" stroke-width="2.5" marker-end="url(#arr)"/>
+<text x="556" y="875" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#0891b2" font-weight="bold">step = 2</text>
+<text x="556" y="904" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#888" font-weight="normal">odd cols/rows skipped</text>
+<rect x="606" y="838" width="50" height="50" fill="rgb(20,20,20)" stroke="white" stroke-width="1.5"/>
+<text x="631" y="863" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">20</text>
+<rect x="656" y="838" width="50" height="50" fill="rgb(215,215,215)" stroke="white" stroke-width="1.5"/>
+<text x="681" y="863" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#111111">215</text>
+<rect x="606" y="888" width="50" height="50" fill="rgb(15,15,15)" stroke="white" stroke-width="1.5"/>
+<text x="631" y="913" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">15</text>
+<rect x="656" y="888" width="50" height="50" fill="rgb(65,65,65)" stroke="white" stroke-width="1.5"/>
+<text x="681" y="913" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">65</text>
+<text x="656" y="1012" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#0891b2" font-weight="bold">sampled 2x2</text>
+<line x1="470" y1="1050" x2="470" y2="1090" stroke="#374151" stroke-width="2.5" marker-end="url(#arr)"/>
+<text x="478" y="1072" text-anchor="start" font-family="sans-serif" font-size="11" fill="#555" font-weight="normal">contrast LUT: ((g - 128) x 1.2 + 128).coerceIn(0, 255)</text>
+<rect x="35" y="1102" width="870" height="326" rx="14" fill="#fafafa" stroke="#ea580c" stroke-width="3"/>
+<text x="470" y="1134" text-anchor="middle" font-family="sans-serif" font-size="17" font-weight="bold" fill="#ea580c">④ Contrast LUT  (precomputed IntArray[256])</text>
+<text x="470" y="1154" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#555">LUT[g] = ((g - 128) x 1.2 + 128).coerceIn(0, 255)  ·  Darks crushed darker  ·  Brights boosted brighter</text>
+<rect x="148" y="1164" width="68" height="68" fill="rgb(20,20,20)" stroke="white" stroke-width="1.5"/>
+<text x="182" y="1198" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">20</text>
+<rect x="216" y="1164" width="68" height="68" fill="rgb(190,190,190)" stroke="white" stroke-width="1.5"/>
+<text x="250" y="1198" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#111111">190</text>
+<rect x="284" y="1164" width="68" height="68" fill="rgb(215,215,215)" stroke="white" stroke-width="1.5"/>
+<text x="318" y="1198" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#111111">215</text>
+<rect x="352" y="1164" width="68" height="68" fill="rgb(30,30,30)" stroke="white" stroke-width="1.5"/>
+<text x="386" y="1198" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">30</text>
+<rect x="148" y="1232" width="68" height="68" fill="rgb(30,30,30)" stroke="white" stroke-width="1.5"/>
+<text x="182" y="1266" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">30</text>
+<rect x="216" y="1232" width="68" height="68" fill="rgb(240,240,240)" stroke="white" stroke-width="1.5"/>
+<text x="250" y="1266" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#111111">240</text>
+<rect x="284" y="1232" width="68" height="68" fill="rgb(220,220,220)" stroke="white" stroke-width="1.5"/>
+<text x="318" y="1266" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#111111">220</text>
+<rect x="352" y="1232" width="68" height="68" fill="rgb(25,25,25)" stroke="white" stroke-width="1.5"/>
+<text x="386" y="1266" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">25</text>
+<rect x="148" y="1300" width="68" height="68" fill="rgb(15,15,15)" stroke="white" stroke-width="1.5"/>
+<text x="182" y="1334" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">15</text>
+<rect x="216" y="1300" width="68" height="68" fill="rgb(55,55,55)" stroke="white" stroke-width="1.5"/>
+<text x="250" y="1334" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">55</text>
+<rect x="284" y="1300" width="68" height="68" fill="rgb(65,65,65)" stroke="white" stroke-width="1.5"/>
+<text x="318" y="1334" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">65</text>
+<rect x="352" y="1300" width="68" height="68" fill="rgb(20,20,20)" stroke="white" stroke-width="1.5"/>
+<text x="386" y="1334" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">20</text>
+<text x="284" y="1390" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#777" font-weight="normal">BEFORE contrast</text>
+<line x1="428" y1="1266" x2="500" y2="1266" stroke="#374151" stroke-width="2.5" marker-end="url(#arr)"/>
+<text x="470" y="1253" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#ea580c" font-weight="bold">LUT[ g ]</text>
+<rect x="520" y="1164" width="68" height="68" fill="rgb(0,0,0)" stroke="white" stroke-width="1.5"/>
+<text x="554" y="1198" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">0</text>
+<rect x="588" y="1164" width="68" height="68" fill="rgb(202,202,202)" stroke="white" stroke-width="1.5"/>
+<text x="622" y="1198" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#111111">202</text>
+<rect x="656" y="1164" width="68" height="68" fill="rgb(232,232,232)" stroke="white" stroke-width="1.5"/>
+<text x="690" y="1198" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#111111">232</text>
+<rect x="724" y="1164" width="68" height="68" fill="rgb(10,10,10)" stroke="white" stroke-width="1.5"/>
+<text x="758" y="1198" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">10</text>
+<rect x="520" y="1232" width="68" height="68" fill="rgb(10,10,10)" stroke="white" stroke-width="1.5"/>
+<text x="554" y="1266" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">10</text>
+<rect x="588" y="1232" width="68" height="68" fill="rgb(255,255,255)" stroke="white" stroke-width="1.5"/>
+<text x="622" y="1266" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#111111">255</text>
+<rect x="656" y="1232" width="68" height="68" fill="rgb(238,238,238)" stroke="white" stroke-width="1.5"/>
+<text x="690" y="1266" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#111111">238</text>
+<rect x="724" y="1232" width="68" height="68" fill="rgb(4,4,4)" stroke="white" stroke-width="1.5"/>
+<text x="758" y="1266" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">4</text>
+<rect x="520" y="1300" width="68" height="68" fill="rgb(0,0,0)" stroke="white" stroke-width="1.5"/>
+<text x="554" y="1334" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">0</text>
+<rect x="588" y="1300" width="68" height="68" fill="rgb(40,40,40)" stroke="white" stroke-width="1.5"/>
+<text x="622" y="1334" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">40</text>
+<rect x="656" y="1300" width="68" height="68" fill="rgb(52,52,52)" stroke="white" stroke-width="1.5"/>
+<text x="690" y="1334" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">52</text>
+<rect x="724" y="1300" width="68" height="68" fill="rgb(0,0,0)" stroke="white" stroke-width="1.5"/>
+<text x="758" y="1334" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="13" font-weight="bold" fill="#ffffff">0</text>
+<text x="656" y="1390" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#ea580c" font-weight="bold">AFTER contrast</text>
+<rect x="216" y="1300" width="68" height="68" fill="none" stroke="#ea580c" stroke-width="3" rx="2"/>
+<rect x="588" y="1300" width="68" height="68" fill="none" stroke="#ea580c" stroke-width="3" rx="2"/>
+<text x="250" y="1384" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ea580c" font-weight="normal">55</text>
+<text x="470" y="1384" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ea580c" font-weight="normal">-> 40  (crushed darker)</text>
+<text x="622" y="1384" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#ea580c" font-weight="normal">40</text>
+<line x1="470" y1="1428" x2="470" y2="1468" stroke="#ea580c" stroke-width="2.5" marker-end="url(#arr)"/>
+<text x="478" y="1444" text-anchor="start" font-family="sans-serif" font-size="11" fill="#555" font-weight="normal">0xFF shl 24 or g shl 16 or g shl 8 or g  ->  ARGB int</text>
+<text x="478" y="1460" text-anchor="start" font-family="sans-serif" font-size="11" fill="#ea580c" font-weight="bold">imageProxy.close()  then  Handler(mainLooper).post()</text>
+<text x="478" y="1475" text-anchor="start" font-family="sans-serif" font-size="10" fill="#ea580c" font-weight="normal">--- THREAD BOUNDARY  (background -> main) ---</text>
+<rect x="35" y="1480" width="870" height="186" rx="14" fill="#fafafa" stroke="#6b7280" stroke-width="3"/>
+<text x="470" y="1512" text-anchor="middle" font-family="sans-serif" font-size="17" font-weight="bold" fill="#374151">⑤ PixelBuffer — reused IntArray</text>
+<text x="470" y="1532" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#555">One ARGB int per pixel.  Same IntArray reused every frame — zero allocation, zero GC pressure.</text>
+<text x="50" y="1536" text-anchor="start" font-family="sans-serif" font-size="11" fill="#6b7280" font-weight="normal">IntArray[12]  (grows to frame_width x frame_height, never shrinks)</text>
+<rect x="50" y="1545" width="70" height="54" fill="rgb(0,0,0)" stroke="#aaa" stroke-width="1.5" rx="3"/>
+<text x="85" y="1572" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="#ffffff">0x00</text>
+<text x="85" y="1608" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#777">[0]</text>
+<text x="85" y="1620" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#aaa">r0c0</text>
+<rect x="120" y="1545" width="70" height="54" fill="rgb(202,202,202)" stroke="#aaa" stroke-width="1.5" rx="3"/>
+<text x="155" y="1572" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="#111111">0xCA</text>
+<text x="155" y="1608" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#777">[1]</text>
+<text x="155" y="1620" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#aaa">r0c1</text>
+<rect x="190" y="1545" width="70" height="54" fill="rgb(232,232,232)" stroke="#aaa" stroke-width="1.5" rx="3"/>
+<text x="225" y="1572" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="#111111">0xE8</text>
+<text x="225" y="1608" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#777">[2]</text>
+<text x="225" y="1620" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#aaa">r0c2</text>
+<rect x="260" y="1545" width="70" height="54" fill="rgb(10,10,10)" stroke="#aaa" stroke-width="1.5" rx="3"/>
+<text x="295" y="1572" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="#ffffff">0x0A</text>
+<text x="295" y="1608" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#777">[3]</text>
+<text x="295" y="1620" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#aaa">r0c3</text>
+<rect x="330" y="1545" width="70" height="54" fill="rgb(10,10,10)" stroke="#aaa" stroke-width="1.5" rx="3"/>
+<text x="365" y="1572" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="#ffffff">0x0A</text>
+<text x="365" y="1608" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#777">[4]</text>
+<text x="365" y="1620" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#aaa">r1c0</text>
+<rect x="400" y="1545" width="70" height="54" fill="rgb(255,255,255)" stroke="#aaa" stroke-width="1.5" rx="3"/>
+<text x="435" y="1572" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="#111111">0xFF</text>
+<text x="435" y="1608" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#777">[5]</text>
+<text x="435" y="1620" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#aaa">r1c1</text>
+<rect x="470" y="1545" width="70" height="54" fill="rgb(238,238,238)" stroke="#aaa" stroke-width="1.5" rx="3"/>
+<text x="505" y="1572" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="#111111">0xEE</text>
+<text x="505" y="1608" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#777">[6]</text>
+<text x="505" y="1620" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#aaa">r1c2</text>
+<rect x="540" y="1545" width="70" height="54" fill="rgb(4,4,4)" stroke="#aaa" stroke-width="1.5" rx="3"/>
+<text x="575" y="1572" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="#ffffff">0x04</text>
+<text x="575" y="1608" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#777">[7]</text>
+<text x="575" y="1620" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#aaa">r1c3</text>
+<rect x="610" y="1545" width="70" height="54" fill="rgb(0,0,0)" stroke="#aaa" stroke-width="1.5" rx="3"/>
+<text x="645" y="1572" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="#ffffff">0x00</text>
+<text x="645" y="1608" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#777">[8]</text>
+<text x="645" y="1620" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#aaa">r2c0</text>
+<rect x="680" y="1545" width="70" height="54" fill="rgb(40,40,40)" stroke="#aaa" stroke-width="1.5" rx="3"/>
+<text x="715" y="1572" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="#ffffff">0x28</text>
+<text x="715" y="1608" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#777">[9]</text>
+<text x="715" y="1620" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#aaa">r2c1</text>
+<rect x="750" y="1545" width="70" height="54" fill="rgb(52,52,52)" stroke="#aaa" stroke-width="1.5" rx="3"/>
+<text x="785" y="1572" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="#ffffff">0x34</text>
+<text x="785" y="1608" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#777">[10]</text>
+<text x="785" y="1620" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#aaa">r2c2</text>
+<rect x="820" y="1545" width="70" height="54" fill="rgb(0,0,0)" stroke="#aaa" stroke-width="1.5" rx="3"/>
+<text x="855" y="1572" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="11" font-weight="bold" fill="#ffffff">0x00</text>
+<text x="855" y="1608" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#777">[11]</text>
+<text x="855" y="1620" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="9" fill="#aaa">r2c3</text>
+<line x1="470" y1="1666" x2="470" y2="1706" stroke="#374151" stroke-width="2.5" marker-end="url(#arr)"/>
+<text x="478" y="1688" text-anchor="start" font-family="sans-serif" font-size="11" fill="#555" font-weight="normal">displayMode?  ->  IMAGE branch or ASCII branch</text>
+<rect x="35" y="1718" width="870" height="336" rx="14" fill="#fafafa" stroke="#16a34a" stroke-width="3"/>
+<text x="470" y="1750" text-anchor="middle" font-family="sans-serif" font-size="17" font-weight="bold" fill="#16a34a">⑥ Display — Compose recomposition on main thread</text>
+<text x="470" y="1770" text-anchor="middle" font-family="sans-serif" font-size="12" fill="#555">IMAGE: Bitmap.setPixels() -> Image() composable  |  ASCII: glyphForIntensity[g] -> Canvas.drawText()</text>
+<rect x="45" y="1775" width="410" height="258" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="3"/>
+<text x="250" y="1799" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#15803d" font-weight="bold">IMAGE mode</text>
+<text x="250" y="1817" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555" font-weight="normal">Bitmap.setPixels() -> Image()</text>
+<rect x="114" y="1833" width="68" height="68" fill="rgb(0,0,0)" stroke="white" stroke-width="1.5"/>
+<rect x="182" y="1833" width="68" height="68" fill="rgb(202,202,202)" stroke="white" stroke-width="1.5"/>
+<rect x="250" y="1833" width="68" height="68" fill="rgb(232,232,232)" stroke="white" stroke-width="1.5"/>
+<rect x="318" y="1833" width="68" height="68" fill="rgb(10,10,10)" stroke="white" stroke-width="1.5"/>
+<rect x="114" y="1901" width="68" height="68" fill="rgb(10,10,10)" stroke="white" stroke-width="1.5"/>
+<rect x="182" y="1901" width="68" height="68" fill="rgb(255,255,255)" stroke="white" stroke-width="1.5"/>
+<rect x="250" y="1901" width="68" height="68" fill="rgb(238,238,238)" stroke="white" stroke-width="1.5"/>
+<rect x="318" y="1901" width="68" height="68" fill="rgb(4,4,4)" stroke="white" stroke-width="1.5"/>
+<rect x="114" y="1969" width="68" height="68" fill="rgb(0,0,0)" stroke="white" stroke-width="1.5"/>
+<rect x="182" y="1969" width="68" height="68" fill="rgb(40,40,40)" stroke="white" stroke-width="1.5"/>
+<rect x="250" y="1969" width="68" height="68" fill="rgb(52,52,52)" stroke="white" stroke-width="1.5"/>
+<rect x="318" y="1969" width="68" height="68" fill="rgb(0,0,0)" stroke="white" stroke-width="1.5"/>
+<rect x="485" y="1775" width="410" height="258" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="3"/>
+<text x="690" y="1799" text-anchor="middle" font-family="sans-serif" font-size="15" fill="#15803d" font-weight="bold">ASCII mode</text>
+<text x="690" y="1817" text-anchor="middle" font-family="sans-serif" font-size="11" fill="#555" font-weight="normal">glyphForIntensity[g and 0xFF] -> drawText()</text>
+<rect x="554" y="1833" width="68" height="68" fill="rgb(0,0,0)" stroke="#444" stroke-width="1.5"/>
+<text x="588" y="1867" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="30" font-weight="bold" fill="#ffffff">·</text>
+<rect x="622" y="1833" width="68" height="68" fill="rgb(202,202,202)" stroke="#444" stroke-width="1.5"/>
+<text x="656" y="1867" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="30" font-weight="bold" fill="#111111">O</text>
+<rect x="690" y="1833" width="68" height="68" fill="rgb(232,232,232)" stroke="#444" stroke-width="1.5"/>
+<text x="724" y="1867" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="30" font-weight="bold" fill="#111111">@</text>
+<rect x="758" y="1833" width="68" height="68" fill="rgb(10,10,10)" stroke="#444" stroke-width="1.5"/>
+<text x="792" y="1867" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="30" font-weight="bold" fill="#ffffff">·</text>
+<rect x="554" y="1901" width="68" height="68" fill="rgb(10,10,10)" stroke="#444" stroke-width="1.5"/>
+<text x="588" y="1935" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="30" font-weight="bold" fill="#ffffff">·</text>
+<rect x="622" y="1901" width="68" height="68" fill="rgb(255,255,255)" stroke="#444" stroke-width="1.5"/>
+<text x="656" y="1935" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="30" font-weight="bold" fill="#111111">@</text>
+<rect x="690" y="1901" width="68" height="68" fill="rgb(238,238,238)" stroke="#444" stroke-width="1.5"/>
+<text x="724" y="1935" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="30" font-weight="bold" fill="#111111">@</text>
+<rect x="758" y="1901" width="68" height="68" fill="rgb(4,4,4)" stroke="#444" stroke-width="1.5"/>
+<text x="792" y="1935" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="30" font-weight="bold" fill="#ffffff">·</text>
+<rect x="554" y="1969" width="68" height="68" fill="rgb(0,0,0)" stroke="#444" stroke-width="1.5"/>
+<text x="588" y="2003" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="30" font-weight="bold" fill="#ffffff">·</text>
+<rect x="622" y="1969" width="68" height="68" fill="rgb(40,40,40)" stroke="#444" stroke-width="1.5"/>
+<text x="656" y="2003" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="30" font-weight="bold" fill="#ffffff">·</text>
+<rect x="690" y="1969" width="68" height="68" fill="rgb(52,52,52)" stroke="#444" stroke-width="1.5"/>
+<text x="724" y="2003" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="30" font-weight="bold" fill="#ffffff">.</text>
+<rect x="758" y="1969" width="68" height="68" fill="rgb(0,0,0)" stroke="#444" stroke-width="1.5"/>
+<text x="792" y="2003" dominant-baseline="central" text-anchor="middle" font-family="monospace" font-size="30" font-weight="bold" fill="#ffffff">·</text>
+<text x="690" y="2057" text-anchor="middle" font-family="sans-serif" font-size="10" fill="#888" font-weight="normal">· = space (dark area)  |  charset density-sorted  (space=dark, @=bright)</text>
+</svg>

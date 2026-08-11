@@ -1,0 +1,69 @@
+flowchart TD
+
+    CAM["Camera Hardware<br/>YUV_420_888 · 640x480 · ~30 fps<br/>backpressure: KEEP_ONLY_LATEST"]
+
+    subgraph EXEC["CameraX Analysis Executor — single background thread"]
+        direction TB
+
+        CFA["CameraFrameAnalyzer.analyze()<br/>receives ImageProxy on every frame"]
+
+        YP["Y-Plane Extraction<br/>planes[0].buffer · rowStride · pixelStride<br/>U/V planes NOT read in grayscale mode"]
+
+        STEP["Downsampling<br/>step = scaleFactor.coerceAtLeast(1)<br/>output grid = floor(width/step) x floor(height/step)<br/>e.g. step=8 gives ~80 x 135 pixels"]
+
+        RM["RotationMap — affine index transform<br/>idx = base + stepX·col + stepY·row<br/>handles 0 / 90 / 180 / 270 degrees"]
+
+        LUT["Contrast LUT · IntArray[256] cached<br/>output = (g - 128) x contrastFactor + 128<br/>clamped 0–255<br/>rebuilt only when contrastFactor changes"]
+
+        PACK["ARGB Pack into PixelBuffer (reused IntArray)<br/>0xFF shl 24 or g shl 16 or g shl 8 or g<br/>IntArray grows but never shrinks across frames"]
+
+        CLOSE["imageProxy.close()<br/>releases camera buffer back to CameraX"]
+    end
+
+    POST["Handler(mainLooper).post()<br/>--- thread boundary ---<br/>FrameProcessingResult (immutable data class)<br/>carries displayBitmap · asciiText · gridSize"]
+
+    subgraph UI["Main Thread — Compose recomposition"]
+        direction TB
+
+        STATE["mutableStateOf FrameProcessingResult<br/>stored in CameraTabContent composable<br/>assignment triggers Compose recomposition"]
+
+        CHK{"displayMode?"}
+
+        subgraph IMGM["Image Mode"]
+            BMP["Bitmap.setPixels()<br/>Config.ARGB_8888<br/>new Bitmap created each frame"]
+            IMGV["Image() composable<br/>contentScale = Fit<br/>filterQuality = None<br/>black letterbox background"]
+        end
+
+        subgraph ASCM["ASCII Mode"]
+            GLYPH["glyphForIntensity[] · CharArray[256] lazy-init<br/>density-sorted charset: space (dark) to @ (bright)<br/>direct lookup: glyphs[pixel and 0xFF]"]
+            SB["StringBuilder (reused)<br/>cleared with setLength(0)<br/>appends each glyph + newline per row"]
+            CANV["AsciiGridPreview · Canvas.drawText()<br/>monospace · white text · black background<br/>text metrics (cell size, baseline) cached"]
+        end
+    end
+
+    CAM      -->|"ImageProxy (YUV)"| CFA
+    CFA      --> YP
+    YP       --> STEP
+    STEP     --> RM
+    RM       --> LUT
+    LUT      --> PACK
+    PACK     --> CLOSE
+    CLOSE    --> POST
+    POST     --> STATE
+    STATE    --> CHK
+    CHK      -->|"IMAGE"| BMP   --> IMGV
+    CHK      -->|"ASCII"| GLYPH --> SB --> CANV
+
+    classDef execStyle   fill:#dbeafe,stroke:#2563eb,stroke-width:2px,color:#1e3a5f
+    classDef uiStyle     fill:#dcfce7,stroke:#16a34a,stroke-width:2px,color:#14532d
+    classDef postStyle   fill:#ffedd5,stroke:#ea580c,stroke-width:2px,color:#7c2d12
+    classDef branchStyle fill:#fef9c3,stroke:#ca8a04,stroke-width:2px,color:#713f12
+    classDef camStyle    fill:#f3e8ff,stroke:#7c3aed,stroke-width:2px,color:#3b0764
+    classDef outStyle    fill:#bbf7d0,stroke:#15803d,stroke-width:1.5px,color:#14532d
+
+    class EXEC execStyle
+    class UI uiStyle
+    class POST postStyle
+    class CHK branchStyle
+    class CAM camStyle
+    class IMGV,CANV outStyle
